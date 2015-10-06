@@ -2950,6 +2950,24 @@ bool AfterLoadGame()
 			}
 		}
 	}
+	
+	//TODO: test
+	if (IsSavegameVersionBefore(190)) {
+		/* Since now we allow more signal colors,
+		 * Move signal states from m4 to m7 to make room. */
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (IsTileType(t, MP_RAILWAY) && HasSignals(t)) {
+				/* move signal states */
+				_m[t].m7 = 0;
+				byte isGreenVals = GB(_m[t].m4, 4, 4)
+				if(_m[t].m4 & 0x1)	_m[t].m7 |= 0x1;
+				if(_m[t].m4 & 0x2)	_m[t].m7 |= 0x4;
+				if(_m[t].m4 & 0x4)	_m[t].m7 |= 0x16;
+				if(_m[t].m4 & 0x8)	_m[t].m7 |= 0x64;
+			}
+		}
+	}
+
 
 	/*
 	 * Only keep order-backups for network clients (and when replaying).

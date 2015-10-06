@@ -352,7 +352,7 @@ static inline void SetSignalVariant(TileIndex t, Track track, SignalVariant v)
  */
 static inline void SetSignalStates(TileIndex tile, uint state)
 {
-	SB(_m[tile].m4, 4, 4, state);
+	SB(_me[tile].m7, 0, 8, state);
 }
 
 /**
@@ -362,7 +362,7 @@ static inline void SetSignalStates(TileIndex tile, uint state)
  */
 static inline uint GetSignalStates(TileIndex tile)
 {
-	return GB(_m[tile].m4, 4, 4);
+	return GB(_me[tile].m7, 0, 8);
 }
 
 /**
@@ -371,8 +371,9 @@ static inline uint GetSignalStates(TileIndex tile)
  * @param signalbit the signal
  * @return the state of the signal
  */
-static inline SignalState GetSingleSignalState(TileIndex t, byte signalbit)
+static inline SignalState GetSingleSignalState(TileIndex t, byte signalbits)
 {
+	//TODO change to add yellow/white
 	return (SignalState)HasBit(GetSignalStates(t), signalbit);
 }
 
@@ -440,8 +441,20 @@ static inline SignalState GetSignalStateByTrackdir(TileIndex tile, Trackdir trac
 {
 	assert(IsValidTrackdir(trackdir));
 	assert(HasSignalOnTrack(tile, TrackdirToTrack(trackdir)));
-	return GetSignalStates(tile) & SignalAlongTrackdir(trackdir) ?
-		SIGNAL_STATE_GREEN : SIGNAL_STATE_RED;
+	if(GetSignalStates(tile) & SignalAlongTrackdir(trackdir)){
+		if(GetSignalStates(tile) & (SignalAlongTrackdir(trackdir)<<1)){
+			return SIGNAL_STATE_WHITE;
+		}else{
+			return SIGNAL_STATE_GREEN;
+		}
+	}else{
+		if(GetSignalStates(tile) & (SignalAlongTrackdir(trackdir)<<1)){
+			return SIGNAL_STATE_YELLOW;
+		}else{
+			return SIGNAL_STATE_RED;
+		}
+	}
+	return SIGNAL_STATE_RED;
 }
 
 /**
@@ -451,7 +464,12 @@ static inline void SetSignalStateByTrackdir(TileIndex tile, Trackdir trackdir, S
 {
 	if (state == SIGNAL_STATE_GREEN) { // set 1
 		SetSignalStates(tile, GetSignalStates(tile) | SignalAlongTrackdir(trackdir));
-	} else {
+	} else if (state == SIGNAL_STATE_YELLOW) { // set 2
+		SetSignalStates(tile, (GetSignalStates(tile) | SignalAlongTrackdir(trackdir))<<1 );
+	} else if (state == SIGNAL_STATE_WHITE) { // set 3
+		SetSignalStates(tile, (	(GetSignalStates(tile) | SignalAlongTrackdir(trackdir))<<1	) 
+							|	(GetSignalStates(tile) | SignalAlongTrackdir(trackdir)		) );
+	} else { //set 0
 		SetSignalStates(tile, GetSignalStates(tile) & ~SignalAlongTrackdir(trackdir));
 	}
 }

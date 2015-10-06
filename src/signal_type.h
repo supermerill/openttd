@@ -42,10 +42,13 @@ template <> struct EnumPropsT<SignalType> : MakeEnumPropsT<SignalType, byte, SIG
  * These are states in which a signal can be. Currently these are only two, so
  * simple boolean logic will do. But do try to compare to this enum instead of
  * normal boolean evaluation, since that will make future additions easier.
+ * Note: this advice has not been followed, it was a mess grrrr.
  */
 enum SignalState {
-	SIGNAL_STATE_RED   = 0, ///< The signal is red
-	SIGNAL_STATE_GREEN = 1, ///< The signal is green
+	SIGNAL_STATE_RED   = 0, ///< The signal is red (stop), next segment is not cleared
+	SIGNAL_STATE_GREEN = 1, ///< The signal is green (pass), next segment is cleared
+	SIGNAL_STATE_YELLOW = 2, ///< The signal is yellow (slow => you must be able to stop at signal if needed), next segment is not cleared/reserved
+	SIGNAL_STATE_WHITE = 3, ///< reserved for future use
 };
 
 #endif /* SIGNAL_TYPE_H */

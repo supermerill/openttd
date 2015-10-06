@@ -2518,6 +2518,7 @@ public:
 	}
 };
 
+//TODO: modify to add pre-reservation, and reservation before the stop signal
 /* choose a track */
 static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, TrackBits tracks, bool force_res, bool *got_reservation, bool mark_stuck)
 {

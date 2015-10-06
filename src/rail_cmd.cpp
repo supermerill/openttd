@@ -1072,7 +1072,8 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 		if (!HasSignals(tile)) {
 			/* there are no signals at all on this tile yet */
 			SetHasSignals(tile, true);
-			SetSignalStates(tile, 0xF); // all signals are on
+			//SetSignalStates(tile, 0xF); // all signals are on
+			SetSignalStates(tile, 0x55); // all signals are GREEN // TODO: change this to a more robust one, it's hacky like this
 			SetPresentSignals(tile, 0); // no signals built by default
 			SetSignalType(tile, track, sigtype);
 			SetSignalVariant(tile, track, sigvar);
@@ -1137,7 +1138,8 @@ CommandCost CmdBuildSingleSignal(TileIndex tile, DoCommandFlag flags, uint32 p1,
 		if (IsPbsSignal(sigtype)) {
 			/* PBS signals should show red unless they are on reserved tiles without a train. */
 			uint mask = GetPresentSignals(tile) & SignalOnTrack(track);
-			SetSignalStates(tile, (GetSignalStates(tile) & ~mask) | ((HasBit(GetRailReservationTrackBits(tile), track) && EnsureNoVehicleOnGround(tile).Succeeded() ? UINT_MAX : 0) & mask));
+			SetSignalStates(tile, (GetSignalStates(tile) & ~mask) | ((HasBit(GetRailReservationTrackBits(tile), track) && EnsureNoVehicleOnGround(tile).Succeeded() ? UINT_MAX : 0) & mask & 0x5));
+			//TODO: or show yellow if they are on a weak reservation without a train.
 		}
 		MarkTileDirtyByTile(tile);
 		AddTrackToSignalBuffer(tile, track, _current_company);
@@ -1831,6 +1833,7 @@ static uint GetSaveSlopeZ(uint x, uint y, Track track)
 	return GetSlopePixelZ(x, y);
 }
 
+		//TODO rewrite the newgrf to add yellow signals (unless, condition will overflow on other signals for yellow/white signals)
 static void DrawSingleSignal(TileIndex tile, const RailtypeInfo *rti, Track track, SignalState condition, SignalOffsets image, uint pos)
 {
 	bool side;
@@ -2330,33 +2333,35 @@ static void DrawTrackBits(TileInfo *ti, TrackBits track)
 
 static void DrawSignals(TileIndex tile, TrackBits rails, const RailtypeInfo *rti)
 {
-#define MAYBE_DRAW_SIGNAL(x, y, z, t) if (IsSignalPresent(tile, x)) DrawSingleSignal(tile, rti, t, GetSingleSignalState(tile, x), y, z)
+#define MAYBE_DRAW_SIGNAL(x, x2, y, z, t) if (IsSignalPresent(tile, x)) DrawSingleSignal(tile, rti, t, GetSingleSignalState(tile, SignalAlongTrackdir(x2), y, z)
 
 	if (!(rails & TRACK_BIT_Y)) {
 		if (!(rails & TRACK_BIT_X)) {
 			if (rails & TRACK_BIT_LEFT) {
-				MAYBE_DRAW_SIGNAL(2, SIGNAL_TO_NORTH, 0, TRACK_LEFT);
-				MAYBE_DRAW_SIGNAL(3, SIGNAL_TO_SOUTH, 1, TRACK_LEFT);
+				//if (rails & TRACK_BIT_LEFT) {
+				// MAYBE_DRAW_SIGNAL(2, 1, SIGNAL_TO_NORTH, 0, TRACK_LEFT);
+				MAYBE_DRAW_SIGNAL(2, TRACKDIR_LEFT_N, SIGNAL_TO_NORTH, 0, TRACK_LEFT);
+				MAYBE_DRAW_SIGNAL(3, TRACKDIR_LEFT_S, SIGNAL_TO_SOUTH, 1, TRACK_LEFT);
 			}
 			if (rails & TRACK_BIT_RIGHT) {
-				MAYBE_DRAW_SIGNAL(0, SIGNAL_TO_NORTH, 2, TRACK_RIGHT);
-				MAYBE_DRAW_SIGNAL(1, SIGNAL_TO_SOUTH, 3, TRACK_RIGHT);
+				MAYBE_DRAW_SIGNAL(0, TRACKDIR_RIGHT_N, SIGNAL_TO_NORTH, 2, TRACK_RIGHT);
+				MAYBE_DRAW_SIGNAL(1, TRACKDIR_RIGHT_S, SIGNAL_TO_SOUTH, 3, TRACK_RIGHT);
 			}
 			if (rails & TRACK_BIT_UPPER) {
-				MAYBE_DRAW_SIGNAL(3, SIGNAL_TO_WEST, 4, TRACK_UPPER);
-				MAYBE_DRAW_SIGNAL(2, SIGNAL_TO_EAST, 5, TRACK_UPPER);
+				MAYBE_DRAW_SIGNAL(3, TRACKDIR_UPPER_W, SIGNAL_TO_WEST, 4, TRACK_UPPER);
+				MAYBE_DRAW_SIGNAL(2, TRACKDIR_UPPER_E, SIGNAL_TO_EAST, 5, TRACK_UPPER);
 			}
 			if (rails & TRACK_BIT_LOWER) {
-				MAYBE_DRAW_SIGNAL(1, SIGNAL_TO_WEST, 6, TRACK_LOWER);
-				MAYBE_DRAW_SIGNAL(0, SIGNAL_TO_EAST, 7, TRACK_LOWER);
+				MAYBE_DRAW_SIGNAL(1, TRACKDIR_LOWER_W, SIGNAL_TO_WEST, 6, TRACK_LOWER);
+				MAYBE_DRAW_SIGNAL(0, TRACKDIR_LOWER_E, SIGNAL_TO_EAST, 7, TRACK_LOWER);
 			}
 		} else {
-			MAYBE_DRAW_SIGNAL(3, SIGNAL_TO_SOUTHWEST, 8, TRACK_X);
-			MAYBE_DRAW_SIGNAL(2, SIGNAL_TO_NORTHEAST, 9, TRACK_X);
+			MAYBE_DRAW_SIGNAL(3, TRACKDIR_X_SW, SIGNAL_TO_SOUTHWEST, 8, TRACK_X);
+			MAYBE_DRAW_SIGNAL(2, TRACKDIR_X_NE, SIGNAL_TO_NORTHEAST, 9, TRACK_X);
 		}
 	} else {
-		MAYBE_DRAW_SIGNAL(3, SIGNAL_TO_SOUTHEAST, 10, TRACK_Y);
-		MAYBE_DRAW_SIGNAL(2, SIGNAL_TO_NORTHWEST, 11, TRACK_Y);
+		MAYBE_DRAW_SIGNAL(3, TRACKDIR_Y_SE, SIGNAL_TO_SOUTHEAST, 10, TRACK_Y);
+		MAYBE_DRAW_SIGNAL(2, TRACKDIR_Y_NW, SIGNAL_TO_NORTHWEST, 11, TRACK_Y);
 	}
 }
 
@@ -2624,7 +2629,7 @@ set_ground:
 	}
 }
 
-
+//i didn't like strack status, it dosn"t carry any SignalStates but 'isRed' bools for each directions...
 static TrackStatus GetTileTrackStatus_Track(TileIndex tile, TransportType mode, uint sub_mode, DiagDirection side)
 {
 	/* Case of half tile slope with water. */
@@ -2666,9 +2671,9 @@ static TrackStatus GetTileTrackStatus_Track(TileIndex tile, TransportType mode, 
 			if (!IsOnewaySignal(tile, TRACK_UPPER) || (a & SignalOnTrack(TRACK_UPPER)) == 0) b |= ~a & SignalOnTrack(TRACK_UPPER);
 			if (!IsOnewaySignal(tile, TRACK_LOWER) || (a & SignalOnTrack(TRACK_LOWER)) == 0) b |= ~a & SignalOnTrack(TRACK_LOWER);
 
-			if ((b & 0x8) == 0) red_signals |= (TRACKDIR_BIT_LEFT_N | TRACKDIR_BIT_X_NE | TRACKDIR_BIT_Y_SE | TRACKDIR_BIT_UPPER_E);
+			if ((b & 0x4) == 0) red_signals |= (TRACKDIR_BIT_LEFT_N | TRACKDIR_BIT_X_NE | TRACKDIR_BIT_Y_SE | TRACKDIR_BIT_UPPER_E);
 			if ((b & 0x4) == 0) red_signals |= (TRACKDIR_BIT_LEFT_S | TRACKDIR_BIT_X_SW | TRACKDIR_BIT_Y_NW | TRACKDIR_BIT_UPPER_W);
-			if ((b & 0x2) == 0) red_signals |= (TRACKDIR_BIT_RIGHT_N | TRACKDIR_BIT_LOWER_E);
+			if ((b & 0x1) == 0) red_signals |= (TRACKDIR_BIT_RIGHT_N | TRACKDIR_BIT_LOWER_E);
 			if ((b & 0x1) == 0) red_signals |= (TRACKDIR_BIT_RIGHT_S | TRACKDIR_BIT_LOWER_W);
 
 			break;
