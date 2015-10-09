@@ -337,7 +337,10 @@ static SigFlags ExploreSegment(Owner owner)
 							}
 						}
 
-						continue;
+						//TODO: end 'strong' reservation here and start post-reservation
+						/* Don't stop block segment processing on advance signals. */
+						if (sig != SIGTYPE_PBS_WEAK) continue;
+						//continue;
 					}
 				}
 

@@ -126,4 +126,20 @@ typedef SimpleTinyEnumT<TrackdirBits, uint16> TrackdirBitsShort;
 
 typedef uint32 TrackStatus;
 
+
+/** Different types of Rail-reservation :
+* . Hard reservation: "normal" ones: this track must stay clean for the train who reserved it.
+* . Pre-reservation : soft reservation, it add a cost to crossing this tile, but can be cleared. Please erase the whole pre-reservation if you clear a tile.
+* . Post-reservation: it's a reservation that can be temporally superseed by a hard one, but must be left afterwards to prevent deadlocks. Don't erase this.
+* . Hard post-reservation : it's when a hard reservation are set on a post-one.
+*/
+enum RailReservationType {
+	RESERV_PRE	= 0x00, ///< pre-reservation : can be erased
+	RESERV_HARD = 0x01, ///< Hard reservation : can't pass, can't be erased
+	RESERV_POST = 0x02, ///< post-reservation : can pass, can't be erased, can be combined with hard
+	RESERV_NONE = 0xFF, ///< No reservations
+};
+DECLARE_ENUM_AS_BIT_SET(RailReservationType)
+
+
 #endif /* TRACK_TYPE_H */

@@ -2101,10 +2101,18 @@ static void CheckNextTrainTile(Train *v)
 	CFollowTrackRail ft(v);
 	if (!ft.Follow(v->tile, td)) return;
 
-	if (!HasReservedTracks(ft.m_new_tile, TrackdirBitsToTrackBits(ft.m_new_td_bits))) {
-		/* Next tile is not reserved. */
-		if (KillFirstBit(ft.m_new_td_bits) == TRACKDIR_BIT_NONE) {
-			if (HasPbsSignalOnTrackdir(ft.m_new_tile, FindFirstTrackdir(ft.m_new_td_bits))) {
+	//if (!HasReservedTracks(ft.m_new_tile, TrackdirBitsToTrackBits(ft.m_new_td_bits))) {
+	//	/* Next tile is not reserved. */
+	//	if (KillFirstBit(ft.m_new_td_bits) == TRACKDIR_BIT_NONE) {
+	//		if (HasPbsSignalOnTrackdir(ft.m_new_tile, FindFirstTrackdir(ft.m_new_td_bits))) {
+	if (KillFirstBit(ft.m_new_td_bits) == TRACKDIR_BIT_NONE) {
+		/* Tile is not a choice tile and can have signals. */
+		Trackdir td = FindFirstTrackdir(ft.m_new_td_bits);
+		if (IsTileType(ft.m_new_tile, MP_RAILWAY) && HasSignalOnTrackdir(ft.m_new_tile, td)) {
+			if (!HasReservedTracks(ft.m_new_tile, TrackdirBitsToTrackBits(ft.m_new_td_bits)) &&
+				IsPbsSignal(GetSignalType(ft.m_new_tile, TrackdirToTrack(td)))) {
+				
+				
 				/* If the next tile is a PBS signal, try to make a reservation. */
 				TrackBits tracks = TrackdirBitsToTrackBits(ft.m_new_td_bits);
 				if (_settings_game.pf.forbid_90_deg) {
@@ -2112,6 +2120,15 @@ static void CheckNextTrainTile(Train *v)
 				}
 				ChooseTrainTrack(v, ft.m_new_tile, ft.m_exitdir, tracks, false, NULL, false);
 			}
+
+			//TODO: my code
+			//if (GetSignalStateByTrackdir(ft.m_new_tile, td) == SIGNAL_STATE_YELLOW) {
+			//	/* A yellow advance or combo signal is on the next tile, try to extend the path. */
+			//	if (DoPathReserve(v, false, false)) {
+			//		SetSignalStateByTrackdir(ft.m_new_tile, td, SIGNAL_STATE_GREEN);
+			//		MarkTileDirtyByTile(ft.m_new_tile);
+			//	}
+			//}
 		}
 	}
 }
@@ -2285,7 +2302,8 @@ void FreeTrainTrackReservation(const Train *v, TileIndex origin, Trackdir orig_t
 					break;
 				} else {
 					/* Turn the signal back to red. */
-					SetSignalStateByTrackdir(tile, td, SIGNAL_STATE_RED);
+					//SetSignalStateByTrackdir(tile, td, SIGNAL_STATE_RED);
+					SetSignalStateByTrackdir(tile, td, GetSignalType(tile, TrackdirToTrack(td)) == SIGTYPE_PBS_WEAK ? SIGNAL_STATE_YELLOW : SIGNAL_STATE_RED);
 					MarkTileDirtyByTile(tile);
 				}
 			} else if (HasSignalOnTrackdir(tile, ReverseTrackdir(td)) && IsOnewaySignal(tile, TrackdirToTrack(td))) {
@@ -2541,7 +2559,8 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
 		if (track != INVALID_TRACK && HasPbsSignalOnTrackdir(tile, TrackEnterdirToTrackdir(track, enterdir))) {
 			do_track_reservation = true;
 			changed_signal = true;
-			SetSignalStateByTrackdir(tile, TrackEnterdirToTrackdir(track, enterdir), SIGNAL_STATE_GREEN);
+			//SetSignalStateByTrackdir(tile, TrackEnterdirToTrackdir(track, enterdir), SIGNAL_STATE_GREEN);
+			SetSignalStateByTrackdir(tile, TrackEnterdirToTrackdir(track, enterdir), IsWeakSignal(tile, track) ? SIGNAL_STATE_YELLOW : SIGNAL_STATE_GREEN);
 		} else if (!do_track_reservation) {
 			return track;
 		}
@@ -2673,6 +2692,38 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
 	return best_track;
 }
 
+
+/**
+* Try to reserve a path to a safe position.
+*
+* @param v The vehicle
+* @param mark_as_stuck Should the train be marked as stuck on a failed reservation?
+* @param first_tile_okay True if no path should be reserved if the current tile is a safe position.
+* @return True if a path could be reserved.
+*/
+bool TryPathReserve(Train *v, bool mark_as_stuck, bool first_tile_okay)
+{
+	assert(v->IsFrontEngine());
+
+	/* We have to handle depots specially as the track follower won't look
+	* at the depot tile itself but starts from the next tile. If we are still
+	* inside the depot, a depot reservation can never be ours. */
+	if (v->track == TRACK_BIT_DEPOT) {
+		if (HasDepotReservation(v->tile)) {
+			if (mark_as_stuck) MarkTrainAsStuck(v);
+			return false;
+		}
+		else {
+			/* Depot not reserved, but the next tile might be. */
+			TileIndex next_tile = TileAddByDiagDir(v->tile, GetRailDepotDirection(v->tile));
+			if (HasReservedTracks(next_tile, DiagdirReachesTracks(GetRailDepotDirection(v->tile)))) return false;
+		}
+	}
+
+	return DoPathReserve(v, mark_as_stuck, first_tile_okay);
+}
+
+
 /**
  * Try to reserve a path to a safe position.
  *
@@ -2681,23 +2732,8 @@ static Track ChooseTrainTrack(Train *v, TileIndex tile, DiagDirection enterdir, 
  * @param first_tile_okay True if no path should be reserved if the current tile is a safe position.
  * @return True if a path could be reserved.
  */
-bool TryPathReserve(Train *v, bool mark_as_stuck, bool first_tile_okay)
+bool DoPathReserve(Train *v, bool mark_as_stuck, bool first_tile_okay)
 {
-	assert(v->IsFrontEngine());
-
-	/* We have to handle depots specially as the track follower won't look
-	 * at the depot tile itself but starts from the next tile. If we are still
-	 * inside the depot, a depot reservation can never be ours. */
-	if (v->track == TRACK_BIT_DEPOT) {
-		if (HasDepotReservation(v->tile)) {
-			if (mark_as_stuck) MarkTrainAsStuck(v);
-			return false;
-		} else {
-			/* Depot not reserved, but the next tile might be. */
-			TileIndex next_tile = TileAddByDiagDir(v->tile, GetRailDepotDirection(v->tile));
-			if (HasReservedTracks(next_tile, DiagdirReachesTracks(GetRailDepotDirection(v->tile)))) return false;
-		}
-	}
 
 	Vehicle *other_train = NULL;
 	PBSTileInfo origin = FollowTrainReservation(v, &other_train);
@@ -2710,6 +2746,8 @@ bool TryPathReserve(Train *v, bool mark_as_stuck, bool first_tile_okay)
 		if (mark_as_stuck) MarkTrainAsStuck(v);
 		return false;
 	}
+
+	//TODO: depend of the reseervation type
 	/* If we have a reserved path and the path ends at a safe tile, we are finished already. */
 	if (origin.okay && (v->tile != origin.tile || first_tile_okay)) {
 		/* Can't be stuck then. */
@@ -2742,8 +2780,9 @@ bool TryPathReserve(Train *v, bool mark_as_stuck, bool first_tile_okay)
 	if (HasBit(v->flags, VRF_TRAIN_STUCK)) {
 		v->wait_counter = 0;
 		SetWindowWidgetDirty(WC_VEHICLE_VIEW, v->index, WID_VV_START_STOP);
+		ClrBit(v->flags, VRF_TRAIN_STUCK);
 	}
-	ClrBit(v->flags, VRF_TRAIN_STUCK);
+	
 	return true;
 }
 

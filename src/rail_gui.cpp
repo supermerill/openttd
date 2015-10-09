@@ -53,7 +53,7 @@ static SignalVariant _cur_signal_variant;    ///< set the signal variant (for si
 static SignalType _cur_signal_type;          ///< set the signal type (for signal GUI)
 
 /* Map the setting: default_signal_type to the corresponding signal type */
-static const SignalType _default_signal_type[] = {SIGTYPE_NORMAL, SIGTYPE_PBS, SIGTYPE_PBS_ONEWAY};
+static const SignalType _default_signal_type[] = { SIGTYPE_NORMAL, SIGTYPE_PBS, SIGTYPE_PBS_ONEWAY, SIGTYPE_PBS_WEAK };
 
 struct RailStationGUISettings {
 	Axis orientation;                 ///< Currently selected rail station orientation
@@ -1581,12 +1581,14 @@ public:
 			case WID_BS_SEMAPHORE_COMBO:
 			case WID_BS_SEMAPHORE_PBS:
 			case WID_BS_SEMAPHORE_PBS_OWAY:
+			case WID_BS_SEMAPHORE_PBS_WEAK:
 			case WID_BS_ELECTRIC_NORM:
 			case WID_BS_ELECTRIC_ENTRY:
 			case WID_BS_ELECTRIC_EXIT:
 			case WID_BS_ELECTRIC_COMBO:
 			case WID_BS_ELECTRIC_PBS:
 			case WID_BS_ELECTRIC_PBS_OWAY:
+			case WID_BS_ELECTRIC_PBS_WEAK:
 				this->RaiseWidget((_cur_signal_variant == SIG_ELECTRIC ? WID_BS_ELECTRIC_NORM : WID_BS_SEMAPHORE_NORM) + _cur_signal_type);
 
 				_cur_signal_type = (SignalType)((uint)((widget - WID_BS_SEMAPHORE_NORM) % (SIGTYPE_LAST + 1)));
@@ -1655,6 +1657,7 @@ static const NWidgetPart _nested_signal_builder_widgets[] = {
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_SEMAPHORE_COMBO), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_SEMAPHORE_COMBO_TOOLTIP), EndContainer(), SetFill(1, 1),
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_SEMAPHORE_PBS), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_SEMAPHORE_PBS_TOOLTIP), EndContainer(), SetFill(1, 1),
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_SEMAPHORE_PBS_OWAY), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_SEMAPHORE_PBS_OWAY_TOOLTIP), EndContainer(), SetFill(1, 1),
+			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_SEMAPHORE_PBS_WEAK), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_SEMAPHORE_PBS_WEAK_TOOLTIP), EndContainer(), SetFill(1, 1),
 			NWidget(WWT_IMGBTN, COLOUR_DARK_GREEN, WID_BS_CONVERT), SetDataTip(SPR_IMG_SIGNAL_CONVERT, STR_BUILD_SIGNAL_CONVERT_TOOLTIP), SetFill(1, 1),
 		EndContainer(),
 		NWidget(NWID_HORIZONTAL, NC_EQUALSIZE),
@@ -1664,6 +1667,7 @@ static const NWidgetPart _nested_signal_builder_widgets[] = {
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_ELECTRIC_COMBO), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_ELECTRIC_COMBO_TOOLTIP), EndContainer(), SetFill(1, 1),
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_ELECTRIC_PBS), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_ELECTRIC_PBS_TOOLTIP), EndContainer(), SetFill(1, 1),
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_ELECTRIC_PBS_OWAY), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_ELECTRIC_PBS_OWAY_TOOLTIP), EndContainer(), SetFill(1, 1),
+			NWidget(WWT_PANEL, COLOUR_DARK_GREEN, WID_BS_ELECTRIC_PBS_WEAK), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_ELECTRIC_PBS_WEAK_TOOLTIP), EndContainer(), SetFill(1, 1),
 			NWidget(WWT_PANEL, COLOUR_DARK_GREEN), SetDataTip(STR_NULL, STR_BUILD_SIGNAL_DRAG_SIGNALS_DENSITY_TOOLTIP), SetFill(1, 1),
 				NWidget(WWT_LABEL, COLOUR_DARK_GREEN, WID_BS_DRAG_SIGNALS_DENSITY_LABEL), SetDataTip(STR_ORANGE_INT, STR_BUILD_SIGNAL_DRAG_SIGNALS_DENSITY_TOOLTIP), SetFill(1, 1),
 				NWidget(NWID_HORIZONTAL), SetPIP(2, 0, 2),

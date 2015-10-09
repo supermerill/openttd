@@ -366,6 +366,24 @@ static inline void SetCrossingReservation(TileIndex t, bool b)
 	SB(_m[t].m5, 4, 1, b ? 1 : 0);
 }
 
+
+/**
+* Get the pbs reservation type
+* @param tile the tile
+* @param track the track
+* @return reserved type
+*/
+static inline RailReservationType GetCrossingReservationType(TileIndex tile, Track track)
+{
+	if (HasCrossingReservation(tile) 
+		&& ((GetCrossingRailAxis(tile) == AXIS_X && track == TRACK_X)
+			|| (GetCrossingRailAxis(tile) == AXIS_Y && track == TRACK_Y)))
+	{
+		return (RailReservationType)GB(_m[tile].m5, 2, 2);
+	}
+	else return RESERV_NONE;
+}
+
 /**
  * Get the reserved track bits for a rail crossing
  * @param t the tile

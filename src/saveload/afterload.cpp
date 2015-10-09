@@ -2951,6 +2951,23 @@ bool AfterLoadGame()
 		}
 	}
 
+	if (IsSavegameVersionBefore(195)) {
+				/* Storage of signal state was changed for PBS signals. */
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (IsTileType(t, MP_RAILWAY)) {
+				if (HasSignalOnTrack(t, TRACK_UPPER) && IsPbsSignal(GetSignalType(t, TRACK_UPPER))) {
+					/* As a PBS signal can only be on one of the two trackdirs,
+					 * we don't need to find out on which trackdir the signal
+					 * really is. */
+					SetSignalStateByTrackdir(t, TRACKDIR_UPPER_E, GetSignalStates(t) & GetPresentSignals(t) & SignalOnTrack(TRACK_UPPER) ? SIGNAL_STATE_GREEN : SIGNAL_STATE_RED);
+				}
+				if (HasSignalOnTrack(t, TRACK_LOWER) && IsPbsSignal(GetSignalType(t, TRACK_LOWER))) {
+					SetSignalStateByTrackdir(t, TRACKDIR_LOWER_E, GetSignalStates(t) & GetPresentSignals(t) & SignalOnTrack(TRACK_LOWER) ? SIGNAL_STATE_GREEN : SIGNAL_STATE_RED);
+				}
+			}
+		}
+	}
+
 	/*
 	 * Only keep order-backups for network clients (and when replaying).
 	 * If we are a network server or not networking, then we just loaded a previously

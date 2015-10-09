@@ -184,7 +184,32 @@ static inline Track GetRailDepotTrack(TileIndex t)
 {
 	return DiagDirToDiagTrack(GetRailDepotDirection(t));
 }
-
+/**
+ * Returns the reservation type for a track on a tile
+ * @pre IsPlainRailTile(t)
+ * @param tile the tile to query
+ * @param trackToCheck the track to query
+ * @return the reservation type
+ */
+static inline RailReservationType GetRailReservationType(TileIndex tile, Track trackToCheck)
+{
+	assert(IsPlainRailTile(tile));
+	//get Rail Reservation TrackBits
+	byte track_b_reserv = GB(_m[tile].m2, 8, 3);
+	if (track_b_reserv == 0) return RESERV_NONE;
+	//get reservation type
+	byte reserv_type_b = GB(_m[tile].m2, 12, 4);
+	//find our track
+	Track track = (Track)(track_b_reserv - 1);    // map array saves Track+1
+	if(track != trackToCheck){
+		return (RailReservationType)(reserv_type_b & 0x3);
+	}else{
+		if(HasBit(_m[tile].m2, 11) && TrackToOppositeTrack(track) == trackToCheck){
+			return (RailReservationType)(reserv_type_b >> 2);
+		}
+	}
+	return RESERV_NONE;
+}
 
 /**
  * Returns the reserved track bits of the tile
@@ -196,8 +221,8 @@ static inline TrackBits GetRailReservationTrackBits(TileIndex t)
 {
 	assert(IsPlainRailTile(t));
 	byte track_b = GB(_m[t].m2, 8, 3);
-	Track track = (Track)(track_b - 1);    // map array saves Track+1
 	if (track_b == 0) return TRACK_BIT_NONE;
+	Track track = (Track)(track_b - 1);    // map array saves Track+1
 	return (TrackBits)(TrackToTrackBits(track) | (HasBit(_m[t].m2, 11) ? TrackToTrackBits(TrackToOppositeTrack(track)) : 0));
 }
 
@@ -275,6 +300,19 @@ static inline void SetDepotReservation(TileIndex t, bool b)
 }
 
 /**
+* Get the pbs reservation type
+* @pre IsRailDepot(t)
+* @param tile the tile
+* @param track the track
+* @return reserved type
+*/
+static inline RailReservationType GetDepotReservationType(TileIndex tile, Track track)
+{
+	return HasDepotReservation(tile) && GetRailDepotTrack(tile) == track ? 
+		(RailReservationType)GB(_m[tile].m5, 2, 2) : RESERV_NONE;
+}
+
+/**
  * Get the reserved track bits for a depot
  * @pre IsRailDepot(t)
  * @param t the tile
@@ -288,7 +326,7 @@ static inline TrackBits GetDepotReservationTrackBits(TileIndex t)
 
 static inline bool IsPbsSignal(SignalType s)
 {
-	return s == SIGTYPE_PBS || s == SIGTYPE_PBS_ONEWAY;
+	return s > SIGTYPE_LAST_NOPBS;
 }
 
 static inline SignalType GetSignalType(TileIndex t, Track track)
@@ -319,7 +357,17 @@ static inline bool IsPresignalExit(TileIndex t, Track track)
 /** One-way signals can't be passed the 'wrong' way. */
 static inline bool IsOnewaySignal(TileIndex t, Track track)
 {
-	return GetSignalType(t, track) != SIGTYPE_PBS;
+	return !IsPbsSignal(GetSignalType(t, track)) || GetSignalType(t, track) == SIGTYPE_PBS_ONEWAY;
+}
+
+static inline bool IsWeakSignal(TileIndex t, Track track)
+{
+	 return GetSignalType(t, track) == SIGTYPE_PBS_WEAK;
+}
+
+static inline bool IsSafeSignal(TileIndex t, Track track)
+{
+	return GetSignalType(t, track) != SIGTYPE_PBS_WEAK;
 }
 
 static inline void CycleSignalSide(TileIndex t, Track track)
@@ -440,8 +488,15 @@ static inline SignalState GetSignalStateByTrackdir(TileIndex tile, Trackdir trac
 {
 	assert(IsValidTrackdir(trackdir));
 	assert(HasSignalOnTrack(tile, TrackdirToTrack(trackdir)));
-	return GetSignalStates(tile) & SignalAlongTrackdir(trackdir) ?
-		SIGNAL_STATE_GREEN : SIGNAL_STATE_RED;
+	Track track = TrackdirToTrack(trackdir);
+	if (IsPbsSignal(GetSignalType(tile, track))) {
+		return (SignalState)((GetSignalStates(tile) & SignalOnTrack(track)) >> SignalBitPosOnTrack(track));
+	} else {
+		return GetSignalStates(tile) & SignalAlongTrackdir(trackdir) ?
+			SIGNAL_STATE_GREEN : SIGNAL_STATE_RED;
+	}
+	/*return GetSignalStates(tile) & SignalAlongTrackdir(trackdir) ?
+		SIGNAL_STATE_GREEN : SIGNAL_STATE_RED;*/
 }
 
 /**
@@ -449,10 +504,15 @@ static inline SignalState GetSignalStateByTrackdir(TileIndex tile, Trackdir trac
  */
 static inline void SetSignalStateByTrackdir(TileIndex tile, Trackdir trackdir, SignalState state)
 {
-	if (state == SIGNAL_STATE_GREEN) { // set 1
-		SetSignalStates(tile, GetSignalStates(tile) | SignalAlongTrackdir(trackdir));
+	Track track = TrackdirToTrack(trackdir);
+	if (IsPbsSignal(GetSignalType(tile, track))) {
+		SetSignalStates(tile, (GetSignalStates(tile) & ~SignalOnTrack(track)) | (state << SignalBitPosOnTrack(track)));
 	} else {
-		SetSignalStates(tile, GetSignalStates(tile) & ~SignalAlongTrackdir(trackdir));
+		if (state == SIGNAL_STATE_GREEN) { // set 1
+			SetSignalStates(tile, GetSignalStates(tile) | SignalAlongTrackdir(trackdir));
+		} else {
+			SetSignalStates(tile, GetSignalStates(tile) & ~SignalAlongTrackdir(trackdir));
+		}
 	}
 }
 

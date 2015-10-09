@@ -410,6 +410,23 @@ static inline void SetRailStationReservation(TileIndex t, bool b)
 }
 
 /**
+* Get the pbs reservation type
+* @param tile the tile
+* @param track the track
+* @return reserved type
+*/
+static inline RailReservationType GetStationReservationType(TileIndex tile, Track track)
+{
+	if (HasStationReservation(tile)
+		&& ((GetRailStationAxis(tile) == AXIS_X && track == TRACK_X)
+			|| (GetRailStationAxis(tile) == AXIS_Y && track == TRACK_Y)))
+	{
+		return (RailReservationType) GB(_me[tile].m6, 0, 2);
+	}
+	else return RESERV_NONE;
+}
+
+/**
  * Get the reserved track bits for a waypoint
  * @pre HasStationRail(t)
  * @param t the tile

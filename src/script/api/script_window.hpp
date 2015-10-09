@@ -2047,12 +2047,14 @@ public:
 		WID_BS_SEMAPHORE_COMBO                       = ::WID_BS_SEMAPHORE_COMBO,                       ///< Build a semaphore combo block signal
 		WID_BS_SEMAPHORE_PBS                         = ::WID_BS_SEMAPHORE_PBS,                         ///< Build a semaphore path signal.
 		WID_BS_SEMAPHORE_PBS_OWAY                    = ::WID_BS_SEMAPHORE_PBS_OWAY,                    ///< Build a semaphore one way path signal.
+		WID_BS_SEMAPHORE_PBS_WEAK                    = ::WID_BS_SEMAPHORE_PBS_WEAK,                    ///< Build a semaphore weak path signal.
 		WID_BS_ELECTRIC_NORM                         = ::WID_BS_ELECTRIC_NORM,                         ///< Build an electric normal block signal
 		WID_BS_ELECTRIC_ENTRY                        = ::WID_BS_ELECTRIC_ENTRY,                        ///< Build an electric entry block signal
 		WID_BS_ELECTRIC_EXIT                         = ::WID_BS_ELECTRIC_EXIT,                         ///< Build an electric exit block signal
 		WID_BS_ELECTRIC_COMBO                        = ::WID_BS_ELECTRIC_COMBO,                        ///< Build an electric combo block signal
 		WID_BS_ELECTRIC_PBS                          = ::WID_BS_ELECTRIC_PBS,                          ///< Build an electric path signal.
 		WID_BS_ELECTRIC_PBS_OWAY                     = ::WID_BS_ELECTRIC_PBS_OWAY,                     ///< Build an electric one way path signal.
+		WID_BS_ELECTRIC_PBS_WEAK                     = ::WID_BS_ELECTRIC_PBS_WEAK,                     ///< Build an electric weak path signal.
 		WID_BS_CONVERT                               = ::WID_BS_CONVERT,                               ///< Convert the signal.
 		WID_BS_DRAG_SIGNALS_DENSITY_LABEL            = ::WID_BS_DRAG_SIGNALS_DENSITY_LABEL,            ///< The current signal density.
 		WID_BS_DRAG_SIGNALS_DENSITY_DECREASE         = ::WID_BS_DRAG_SIGNALS_DENSITY_DECREASE,         ///< Decrease the signal density.

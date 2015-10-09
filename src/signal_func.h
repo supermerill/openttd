@@ -16,6 +16,7 @@
 #include "tile_type.h"
 #include "direction_type.h"
 #include "company_type.h"
+#include "core/bitmath_func.hpp"
 
 /**
  * Maps a trackdir to the bit that stores its status in the map arrays, in the
@@ -45,6 +46,15 @@ static inline byte SignalOnTrack(Track track)
 {
 	extern const byte _signal_on_track[TRACK_END];
 	return _signal_on_track[track];
+}
+
+/**
+* Maps a track to the starting bit number where the signal state
+* for the signals on the track is stored.
+*/
+static inline byte SignalBitPosOnTrack(Track track)
+{
+	return FIND_FIRST_BIT(SignalOnTrack(track));
 }
 
 /** State of the signal segment */

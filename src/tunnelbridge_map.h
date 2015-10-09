@@ -110,6 +110,24 @@ static inline void SetTunnelBridgeReservation(TileIndex t, bool b)
 	SB(_m[t].m5, 4, 1, b ? 1 : 0);
 }
 
+
+/**
+* Get the pbs reservation type
+* @param tile the tile
+* @param track the track
+* @return reserved type
+*/
+static inline RailReservationType GetTunnelBridgeReservationType(TileIndex tile, Track track)
+{
+	if (HasTunnelBridgeReservation(tile)
+		&& ((GetTunnelBridgeDirection(tile) & 0x1 == 0 && track == TRACK_X)
+			|| (GetTunnelBridgeDirection(tile) & 0x1 ==1 && track == TRACK_Y)))
+	{
+		return (RailReservationType) GB(_m[tile].m5, 5, 2);
+	}
+	else return RESERV_NONE;
+}
+
 /**
  * Get the reserved track bits for a rail tunnel/bridge
  * @pre IsTileType(t, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(t) == TRANSPORT_RAIL

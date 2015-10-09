@@ -50,6 +50,39 @@ TrackBits GetReservedTrackbits(TileIndex t)
 }
 
 /**
+ * Get the reservation type of a track on a tile.
+ * @param tile the tile
+ * @param track the track
+ * @return the reserved trackbits. RESERV_NONE on nothing reserved or
+ *     a tile without rail.
+ */
+RailReservationType GetReservedType(TileIndex tile, Track track)
+{
+	switch (GetTileType(tile)) {
+		case MP_RAILWAY:
+			if (IsRailDepot(tile)) return GetDepotReservationType(tile, track);
+			if (IsPlainRail(tile)) return GetRailReservationType(tile, track);
+			break;
+
+		case MP_ROAD:
+			if (IsLevelCrossing(tile)) return GetCrossingReservationType(tile, track);
+			break;
+
+		case MP_STATION:
+			if (HasStationRail(tile)) return GetStationReservationType(tile, track);
+			break;
+
+		case MP_TUNNELBRIDGE:
+			if (GetTunnelBridgeTransportType(tile) == TRANSPORT_RAIL) return GetTunnelBridgeReservationType(tile, track);
+			break;
+
+		default:
+			break;
+	}
+	return RESERV_NONE;
+}
+
+/**
  * Set the reservation for a complete station platform.
  * @pre IsRailStationTile(start)
  * @param start starting tile of the platform

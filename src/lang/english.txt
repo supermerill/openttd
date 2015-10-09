@@ -2359,12 +2359,14 @@ STR_BUILD_SIGNAL_SEMAPHORE_EXIT_TOOLTIP                         :{BLACK}Exit Sig
 STR_BUILD_SIGNAL_SEMAPHORE_COMBO_TOOLTIP                        :{BLACK}Combo Signal (semaphore){}The combo signal simply acts as both an entry and exit signal. This allows you to build large "trees" of pre-signals
 STR_BUILD_SIGNAL_SEMAPHORE_PBS_TOOLTIP                          :{BLACK}Path Signal (semaphore){}A path signal allows more than one train to enter a signal block at the same time, if the train can reserve a path to a safe stopping point. Standard path signals can be passed from the back side
 STR_BUILD_SIGNAL_SEMAPHORE_PBS_OWAY_TOOLTIP                     :{BLACK}One-way Path Signal (semaphore){}A path signal allows more than one train to enter a signal block at the same time, if the train can reserve a path to a safe stopping point. One-way path signals can't be passed from the back side
+STR_BUILD_SIGNAL_SEMAPHORE_PBS_WEAK_TOOLTIP                     :{BLACK}Weak Path Signal (semaphore){}A path signal allows more than one train to enter a signal block at the same time, if the train can reserve a path to a safe stopping point. Weak path signals are unsafe waiting position, so it reserved an other portion to be sure it can leave this spot.
 STR_BUILD_SIGNAL_ELECTRIC_NORM_TOOLTIP                          :{BLACK}Block Signal (electric){}This is the most basic type of signal, allowing only one train to be in the same block at the same time
 STR_BUILD_SIGNAL_ELECTRIC_ENTRY_TOOLTIP                         :{BLACK}Entry Signal (electric){}Green as long as there is one or more green exit-signal from the following section of track. Otherwise it shows red
 STR_BUILD_SIGNAL_ELECTRIC_EXIT_TOOLTIP                          :{BLACK}Exit Signal (electric){}Behaves in the same way as a block signal but is necessary to trigger the correct colour on entry & combo pre-signals
 STR_BUILD_SIGNAL_ELECTRIC_COMBO_TOOLTIP                         :{BLACK}Combo Signal (electric){}The combo signal simply acts as both an entry and exit signal. This allows you to build large "trees" of pre-signals
 STR_BUILD_SIGNAL_ELECTRIC_PBS_TOOLTIP                           :{BLACK}Path Signal (electric){}A path signal allows more than one train to enter a signal block at the same time, if the train can reserve a path to a safe stopping point. Standard path signals can be passed from the back side
 STR_BUILD_SIGNAL_ELECTRIC_PBS_OWAY_TOOLTIP                      :{BLACK}One-way Path Signal (electric){}A path signal allows more than one train to enter a signal block at the same time, if the train can reserve a path to a safe stopping point. One-way path signals can't be passed from the back side
+STR_BUILD_SIGNAL_ELECTRIC_PBS_WEAK_TOOLTIP                      :{BLACK}Weak Path Signal (electric){}A path signal allows more than one train to enter a signal block at the same time, if the train can reserve a path to a safe stopping point. Weak path signals are unsafe waiting position, so it reserved an other portion to be sure it can leave this spot.
 STR_BUILD_SIGNAL_CONVERT_TOOLTIP                                :{BLACK}Signal Convert{}When selected, clicking an existing signal will convert it to the selected signal type and variant. Ctrl+Click will toggle the existing variant. Shift+Click shows estimated conversion cost
 STR_BUILD_SIGNAL_DRAG_SIGNALS_DENSITY_TOOLTIP                   :{BLACK}Dragging signal density
 STR_BUILD_SIGNAL_DRAG_SIGNALS_DENSITY_DECREASE_TOOLTIP          :{BLACK}Decrease dragging signal density
@@ -2608,21 +2610,28 @@ STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXITSIGNALS                 :{STRING} track 
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBOSIGNALS                :{STRING} track with combo-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBSSIGNALS                  :{STRING} track with path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRYSIGNALS              :{STRING} track with one-way path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBSWEAKSIGNALS              :{STRING} track with weak path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PRESIGNALS           :{STRING} track with block and pre-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_EXITSIGNALS          :{STRING} track with block and exit-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_COMBOSIGNALS         :{STRING} track with block and combo-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PBSSIGNALS           :{STRING} track with block and path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_NOENTRYSIGNALS       :{STRING} track with block and one-way path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NORMAL_PBSWEAKSIGNALS       :{STRING} track with block and weak path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_EXITSIGNALS             :{STRING} track with pre- and exit-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_COMBOSIGNALS            :{STRING} track with pre- and combo-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_PBSSIGNALS              :{STRING} track with pre- and path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_NOENTRYSIGNALS          :{STRING} track with pre- and one-way path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PRE_PBSWEAKSIGNALS          :{STRING} track with pre- and weak path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_COMBOSIGNALS           :{STRING} track with exit- and combo-signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_PBSSIGNALS             :{STRING} track with exit- and path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_NOENTRYSIGNALS         :{STRING} track with exit- and one-way path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_EXIT_PBSWEAKSIGNALS         :{STRING} track with exit- and weak path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSSIGNALS            :{STRING} track with combo- and path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_NOENTRYSIGNALS        :{STRING} track with combo- and one-way path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_COMBO_PBSWEAKSIGNALS        :{STRING} track with combo- and weak path signals
 STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_NOENTRYSIGNALS          :{STRING} track with path and one-way path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_PBS_PBSWEAKSIGNALS          :{STRING} track with path path and weak path signals
+STR_LAI_RAIL_DESCRIPTION_TRACK_WITH_NOENTRY_PBSWEAKSIGNALS      :{STRING} track with one-way and weak path signals
 STR_LAI_RAIL_DESCRIPTION_TRAIN_DEPOT                            :{STRING} train depot
 
 STR_LAI_ROAD_DESCRIPTION_ROAD                                   :Road
